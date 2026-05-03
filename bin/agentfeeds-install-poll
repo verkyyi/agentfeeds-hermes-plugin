@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT="${BASH_SOURCE[0]}"
+while [ -L "$SCRIPT" ]; do
+  DIR="$(cd -P "$(dirname "$SCRIPT")" && pwd)"
+  SCRIPT="$(readlink "$SCRIPT")"
+  [[ "$SCRIPT" != /* ]] && SCRIPT="$DIR/$SCRIPT"
+done
+CORE_DIR="${AGENTFEEDS_CORE_DIR:-$HOME/.hermes/plugins-src/agentfeeds-core}"
+CATALOG_DIR="${AGENTFEEDS_CATALOG_DIR:-$HOME/.hermes/plugins-src/agentfeeds-catalog}"
+
+if ! command -v uv >/dev/null 2>&1; then
+  echo "uv is required to run Agent Feeds. Install uv, then rerun install.sh." >&2
+  exit 127
+fi
+
+if [ ! -f "$CORE_DIR/pyproject.toml" ]; then
+  echo "Agent Feeds core checkout not found at $CORE_DIR. Run this plugin's install.sh first." >&2
+  exit 1
+fi
+
+if [ -f "$CATALOG_DIR/catalog/INDEX.json" ]; then
+  export AGENTFEEDS_CATALOG_DIR="$CATALOG_DIR"
+fi
+
+exec uv run --project "$CORE_DIR" agentfeeds-install-poll "$@"
