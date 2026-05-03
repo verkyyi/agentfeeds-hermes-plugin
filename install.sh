@@ -13,8 +13,8 @@ CORE_DIR="${AGENTFEEDS_CORE_DIR:-$HOME/.hermes/plugins-src/agentfeeds-core}"
 CATALOG_REPO="${AGENTFEEDS_CATALOG_REPO:-https://github.com/verkyyi/agentfeeds-catalog}"
 CATALOG_DIR="${AGENTFEEDS_CATALOG_DIR:-$HOME/.hermes/plugins-src/agentfeeds-catalog}"
 
-if ! command -v uv >/dev/null 2>&1; then
-  echo "uv is required to install Agent Feeds. Install uv and rerun this script." >&2
+if ! command -v python3 >/dev/null 2>&1; then
+  echo "python3 is required to install Agent Feeds. Install Python 3.11+ and rerun this script." >&2
   exit 127
 fi
 
@@ -52,15 +52,21 @@ ln -sfn "$PLUGIN_DIR/bin/agentfeeds-fetch" "$HOME/.local/bin/agentfeeds-fetch"
 ln -sfn "$PLUGIN_DIR/bin/agentfeeds-install-poll" "$HOME/.local/bin/agentfeeds-install-poll"
 ln -sfn "$PLUGIN_DIR/bin/agentfeeds-uninstall-poll" "$HOME/.local/bin/agentfeeds-uninstall-poll"
 
+python3 "$CORE_DIR/scripts/setup.py"
+
 if command -v hermes >/dev/null 2>&1; then
   hermes plugins enable agentfeeds
 else
   echo "hermes not found on PATH; enable the plugin manually later: hermes plugins enable agentfeeds" >&2
 fi
 
-AGENTFEEDS_CATALOG_DIR="$CATALOG_DIR" uv run --project "$CORE_DIR" agentfeeds-fetch --update-catalog --regenerate-catalog
+AGENTFEEDS_CATALOG_DIR="$CATALOG_DIR" python3 "$CORE_DIR/scripts/agentfeeds_fetch.py" --update-catalog --regenerate-catalog
+if ! AGENTFEEDS_CATALOG_DIR="$CATALOG_DIR" python3 "$CORE_DIR/scripts/agentfeeds.py" polling install; then
+  echo "Background polling was not installed; run agentfeeds polling status --json for diagnostics." >&2
+fi
 
 echo "Installed Agent Feeds Hermes plugin, skill, and CLI wrappers."
 echo "Agent Feeds core checkout: $CORE_DIR"
 echo "Agent Feeds catalog checkout: $CATALOG_DIR"
+echo "Agent Feeds background refresh: check with agentfeeds polling status --json"
 echo "Restart Hermes for the plugin and skill to take effect."

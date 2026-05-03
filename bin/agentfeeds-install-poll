@@ -10,12 +10,12 @@ done
 CORE_DIR="${AGENTFEEDS_CORE_DIR:-$HOME/.hermes/plugins-src/agentfeeds-core}"
 CATALOG_DIR="${AGENTFEEDS_CATALOG_DIR:-$HOME/.hermes/plugins-src/agentfeeds-catalog}"
 
-if ! command -v uv >/dev/null 2>&1; then
-  echo "uv is required to run Agent Feeds. Install uv, then rerun install.sh." >&2
+if ! command -v python3 >/dev/null 2>&1; then
+  echo "python3 is required to run Agent Feeds. Install Python 3.11+, then rerun install.sh." >&2
   exit 127
 fi
 
-if [ ! -f "$CORE_DIR/pyproject.toml" ]; then
+if [ ! -f "$CORE_DIR/scripts/agentfeeds.py" ]; then
   echo "Agent Feeds core checkout not found at $CORE_DIR. Run this plugin's install.sh first." >&2
   exit 1
 fi
@@ -24,4 +24,8 @@ if [ -f "$CATALOG_DIR/catalog/INDEX.json" ]; then
   export AGENTFEEDS_CATALOG_DIR="$CATALOG_DIR"
 fi
 
-exec uv run --project "$CORE_DIR" agentfeeds-install-poll "$@"
+if [ "${1:-}" = "--help" ] || [ "${1:-}" = "-h" ]; then
+  exec python3 "$CORE_DIR/scripts/agentfeeds.py" polling install --help
+fi
+
+exec python3 "$CORE_DIR/scripts/agentfeeds.py" "$@" polling install

@@ -19,13 +19,14 @@ def load_plugin():
 
 def test_hermes_plugin_injects_compact_stream_metadata(tmp_path):
     plugin = load_plugin()
+    plugin._agentfeeds_brief = lambda: None
     (tmp_path / "subscriptions.yaml").write_text(
         "\n".join(
             [
                 "subscriptions:",
                 "  - id: example/feed",
                 "    title: Example feed",
-                "    provider: example/provider",
+                "    template: example/template",
                 "",
             ]
         ),
@@ -43,6 +44,7 @@ def test_hermes_plugin_injects_compact_stream_metadata(tmp_path):
 
 def test_hermes_plugin_falls_back_to_state_metadata(tmp_path):
     plugin = load_plugin()
+    plugin._agentfeeds_brief = lambda: None
     state_dir = tmp_path / "state" / "example.com"
     state_dir.mkdir(parents=True)
     (state_dir / "feed.json").write_text(
@@ -55,3 +57,14 @@ def test_hermes_plugin_falls_back_to_state_metadata(tmp_path):
     context = plugin._agentfeeds_context()["context"]
 
     assert "- example/feed: Example feed" in context
+
+
+def test_hermes_plugin_prefers_cli_brief(tmp_path):
+    plugin = load_plugin()
+    plugin._agentfeeds_brief = lambda: "<agentfeeds>\nNo active local streams.\n</agentfeeds>"
+    plugin.STATE_ROOT = tmp_path / "state"
+    plugin.SUBSCRIPTIONS_FILE = tmp_path / "missing.yaml"
+
+    context = plugin._agentfeeds_context()["context"]
+
+    assert context == "<agentfeeds>\nNo active local streams.\n</agentfeeds>"

@@ -1,6 +1,6 @@
 ---
 name: agentfeeds
-description: Use local Agent Feeds subscriptions and state files for ambient context. Use when subscribing to feeds, refreshing feeds, discovering available streams, or answering from ~/.agentfeeds state files.
+description: Use local Agent Feeds subscriptions and stream state for ambient context. Use at Hermes session start to check background refresh and compact stream brief, and before web search or source-specific work when subscribed changing context such as RSS/news, GitHub, calendars, weather, local files, private sources, templates, subscriptions, or stream state may cover the prompt.
 version: 0.1.0
 author: verkyyi
 license: MIT
@@ -12,105 +12,111 @@ metadata:
 
 # Agent Feeds
 
-Use Agent Feeds to answer questions from local subscribed data streams before searching the web.
+Use Agent Feeds to answer from local subscribed streams before searching the web or rerunning source-specific data pipelines.
 
-Hermes should treat Agent Feeds commands as an internal control plane. The operator asks for outcomes in natural language; run the needed commands, inspect the resulting files, and report what changed. Do not make CLI flags the primary user experience.
+Hermes should treat Agent Feeds commands as an internal control plane. The operator asks for outcomes in natural language; run the needed commands and report concise results. Do not make CLI flags the primary user experience.
+
+Vocabulary:
+
+- Template: reusable feed definition. Some templates need no parameters; others require parameters.
+- Subscription: configured active instance of a template.
+- Stream: refreshed readable data for an active subscription.
 
 ## Session Start
 
-At the start of a session, check whether `~/.agentfeeds/catalog.md` exists.
+At the start of a session:
 
-If it exists, read it and treat its listed streams as available local context. Detailed data is in the state file shown for each stream.
+```bash
+agentfeeds polling status --json
+agentfeeds streams health --json
+agentfeeds brief
+```
 
-If it does not exist, continue normally. The user may not have subscribed to any streams yet.
+The plugin also tries to inject `agentfeeds brief` automatically. The default brief is stable and data-only; place it in a system-level or persistent prompt slot when the host supports that.
+
+If polling is missing, run:
+
+```bash
+agentfeeds polling install
+```
+
+Background refresh is required for normal ambient use. If the scheduler is unsupported or broken, continue with explicit refreshes but tell the operator ambient awareness is degraded when it affects the answer.
 
 ## Answering Questions
 
-When the user asks about a topic covered by a subscribed stream:
+When a prompt may be covered by subscribed changing context:
 
-1. Read the matching state file from `~/.agentfeeds/state/`.
-2. Check `_meta.stale`.
-3. If `_meta.stale` is `false`, answer from the state file and do not web-search.
-4. If `_meta.stale` is `true`, refresh the stream before answering when freshness matters.
+1. Search local state first:
 
-State files are read-only from the agent perspective. Never edit files under `~/.agentfeeds/state/` directly.
+```bash
+agentfeeds search <topic> --json
+```
 
-## Refreshing Stale Data
+2. If a non-stale match covers the question, read the matching stream and answer from local state:
 
-When a covered state file is stale and the user asks about current data, run:
+```bash
+agentfeeds streams read <subscription-id> --limit 20 --json
+```
+
+3. If a matching stream is stale and freshness matters, refresh only that stream:
 
 ```bash
 agentfeeds-fetch --stream <subscription-id>
 ```
 
-Then re-read the state file and answer from the refreshed data.
+4. Use web search or other external tools only when local streams do not cover the prompt, cannot refresh, or the user explicitly asks for outside/current web information beyond subscribed data.
 
-Use `agentfeeds-fetch --all` only when the user asks to refresh all subscriptions.
+Do not hand-read or edit files under `~/.agentfeeds/state/` during normal operation. Use the CLI surfaces.
 
 ## Subscribing
 
-When the user asks to subscribe to something, load `recipes/subscribe.md` and follow it.
+When the user asks to subscribe to a source, load `recipes/subscribe.md` and follow it.
 
-When no provider fits the requested source, offer to draft a provider and load `recipes/provider-authoring.md`.
-
-Subscriptions are stored in `~/.agentfeeds/subscriptions.yaml`. Use the `agentfeeds` CLI internally for changes; the fetcher owns state-file writes.
-
-Command patterns:
+Current command patterns:
 
 ```bash
-agentfeeds subscribe <provider-id> key=value
-agentfeeds subscribe <provider-id> key=value --id <subscription-id> --title "<title>"
-agentfeeds subscribe local/file path=/absolute/or/~/file.md --title "<title>"
+agentfeeds templates search <query>
+agentfeeds templates show <template-id> --json
+agentfeeds subscribe <template-id> [key=value ...]
+agentfeeds subscribe <template-id> [key=value ...] --id <subscription-id> --title "<title>"
 agentfeeds unsubscribe <subscription-id>
-agentfeeds discover <query>
-agentfeeds providers adapters
-agentfeeds providers list
-agentfeeds providers path
-agentfeeds providers scaffold <adapter-kind> <provider-id>
-agentfeeds providers test <provider-id> key=value
-agentfeeds providers validate
-agentfeeds status
+agentfeeds streams list --json
+agentfeeds streams health --json
+agentfeeds streams read <subscription-id> --limit 20 --json
 ```
+
+If no template fits the requested source, offer local template authoring and load `recipes/template-authoring.md`.
+
+## Template Authoring
+
+When the user asks whether Agent Feeds can support a new source, first search templates:
+
+```bash
+agentfeeds templates search <query>
+```
+
+If there is no suitable built-in template, help draft one:
+
+```bash
+agentfeeds templates adapters
+agentfeeds templates path
+agentfeeds templates scaffold <adapter-kind> <template-id>
+agentfeeds templates validate
+agentfeeds templates test <template-id> [key=value ...]
+```
+
+Use `recipes/template-authoring.md` to create template YAML and schemas. Use `recipes/template-testing.md` to validate and smoke-test a template. Prefer private/local templates for operator-specific awareness before suggesting public catalog contributions.
+
+For `local_command`, use argv arrays only. Show the exact command to the operator and run `agentfeeds templates approve-command <template-id> [key=value ...]` only after approval. Avoid commands that mutate files, cloud resources, accounts, or external services.
 
 ## Unsubscribing
 
 When the user asks to remove a subscription, load `recipes/unsubscribe.md` and follow it.
 
-## Discovery
+## Safety Rules
 
-When the user asks what streams are available, load `recipes/discover.md` and search `~/.agentfeeds/catalog-cache/INDEX.json`.
-
-If the local catalog cache is missing, run:
-
-```bash
-agentfeeds-fetch --update-catalog
-```
-
-Then retry discovery.
-
-## Provider Authoring
-
-When the user asks whether Agent Feeds can support a new source, first run `agentfeeds discover <query>`.
-
-If there is no suitable provider, help draft one:
-
-```bash
-agentfeeds providers path
-agentfeeds providers test <provider-id> key=value
-agentfeeds providers validate
-```
-
-Use `recipes/provider-authoring.md` to create provider YAML and schemas. Use `recipes/provider-testing.md` to validate and smoke-test a provider. Prefer private/local providers for personal-agent awareness before suggesting public feeds.
-
-## File Rules
-
-- Read `~/.agentfeeds/catalog.md` for the active subscription summary.
-- Read state files listed in `catalog.md` for actual data.
-- Change subscriptions with `agentfeeds subscribe` / `agentfeeds unsubscribe`.
-- Never hand-write files in `~/.agentfeeds/state/`.
-- Use `agentfeeds-fetch --regenerate-catalog` after subscription edits that do not fetch.
-- User-local provider definitions live in `~/.agentfeeds/providers/streams/`; user-local event schemas live in `~/.agentfeeds/providers/schemas/event-types/`.
-
-## Freshness Rule
-
-If a non-stale state file covers the user's question, use it. Avoid web search unless the user explicitly asks for outside information or the local stream does not cover the question.
+- Change subscriptions with `agentfeeds subscribe` and `agentfeeds unsubscribe`.
+- Refresh through `agentfeeds-fetch` or `agentfeeds refresh`.
+- Do not hand-write state or status files.
+- Do not include secrets in template YAML.
+- Treat Agent Feeds as warm changing context, not durable memory, semantic search, or a data warehouse.

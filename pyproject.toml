@@ -1,7 +1,7 @@
 [project]
 name = "agentfeeds-hermes-plugin"
 version = "0.1.0"
-description = "Hermes plugin and skill for Agent Feeds"
+description = "Hermes plugin for the Agent Feeds skill"
 readme = "README.md"
 requires-python = ">=3.11"
 license = "MIT"

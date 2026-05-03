@@ -3,11 +3,15 @@
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
+import subprocess
 
 STATE_ROOT = Path.home() / ".agentfeeds" / "state"
 SUBSCRIPTIONS_FILE = Path.home() / ".agentfeeds" / "subscriptions.yaml"
+AGENTFEEDS_CLI = os.environ.get("AGENTFEEDS_CLI", "agentfeeds")
 MAX_STREAMS = 20
+BRIEF_TIMEOUT_SECONDS = 2
 
 
 def _clean_yaml_scalar(value: str) -> str:
@@ -78,20 +82,35 @@ def _stream_entries() -> list[dict]:
 
 
 def _agentfeeds_context(**_kwargs):
+    brief = _agentfeeds_brief()
+    if brief:
+        return {"context": brief}
+
     entries = _subscription_entries() or _stream_entries()
     if not entries:
         return None
 
     lines = ["<agentfeeds>", "Available local streams:"]
     lines.extend(f"- {entry['id']}: {entry['title']}" for entry in entries)
-    lines.extend(
-        [
-            "",
-            "When relevant, read ~/.agentfeeds/catalog.md to locate the state file before web search.",
-            "</agentfeeds>",
-        ]
-    )
+    lines.append("</agentfeeds>")
     return {"context": "\n".join(lines)}
+
+
+def _agentfeeds_brief() -> str | None:
+    try:
+        result = subprocess.run(
+            [AGENTFEEDS_CLI, "brief"],
+            check=False,
+            text=True,
+            capture_output=True,
+            timeout=BRIEF_TIMEOUT_SECONDS,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+    if result.returncode != 0:
+        return None
+    brief = result.stdout.strip()
+    return brief if brief.startswith("<agentfeeds>") else None
 
 
 def register(ctx):

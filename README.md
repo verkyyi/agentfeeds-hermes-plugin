@@ -2,9 +2,9 @@
 
 Standalone Hermes plugin and skill for Agent Feeds.
 
-Agent Feeds gives Hermes a local-first ambient context layer. The plugin injects compact stream metadata into Hermes turns, and the skill teaches Hermes how to discover, subscribe, refresh, and answer from Agent Feeds state files under `~/.agentfeeds`.
+Agent Feeds gives Hermes a local-first ambient context layer. The plugin injects compact stream metadata into Hermes turns, and the skill teaches Hermes how to discover, subscribe, refresh, and answer from Agent Feeds stream state through the bundled CLI.
 
-The core Agent Feeds CLI and provider catalog live in separate repositories. This plugin installer clones or updates those checkouts and exposes command wrappers on `PATH`.
+The Agent Feeds skill runtime and built-in template catalog live in separate repositories. This plugin installer clones or updates those checkouts, runs the skill setup, installs background refresh, and exposes command wrappers on `PATH`.
 
 ## Install
 
@@ -16,12 +16,14 @@ git clone https://github.com/verkyyi/agentfeeds-hermes-plugin ~/.hermes/plugins-
 The installer:
 
 - clones or updates Agent Feeds core at `~/.hermes/plugins-src/agentfeeds-core`
-- clones or updates the built-in provider catalog at `~/.hermes/plugins-src/agentfeeds-catalog`
+- clones or updates the built-in template catalog at `~/.hermes/plugins-src/agentfeeds-catalog`
 - symlinks this repo to `~/.hermes/plugins/agentfeeds`
 - symlinks this repo to `~/.hermes/skills/agentfeeds`
 - installs command wrappers in `~/.local/bin`
 - enables the Hermes plugin when `hermes` is available on `PATH`
-- initializes `~/.agentfeeds/catalog.md`
+- runs the Agent Feeds skill setup
+- initializes `~/.agentfeeds/catalog-cache/` and `~/.agentfeeds/catalog.md`
+- installs or updates background polling when the host scheduler is supported
 
 Override the core source when needed:
 
@@ -38,7 +40,7 @@ AGENTFEEDS_CATALOG_DIR=~/.hermes/plugins-src/agentfeeds-catalog \
 Restart Hermes after installation, then ask:
 
 ```text
-What Agent Feeds providers can I subscribe to?
+What Agent Feeds templates can I subscribe to?
 ```
 
 ```text

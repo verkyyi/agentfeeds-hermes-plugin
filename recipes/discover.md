@@ -1,13 +1,21 @@
 # Discover Recipe
 
-Use this when the user asks what Agent Feeds streams are available.
+Use this when the user asks what Agent Feeds templates or active streams are available.
 
-1. Run `agentfeeds discover <query>`.
-2. Present the best matches with:
-   - title
-   - provider id
-   - required parameters
-   - auth requirement
-   - quality tier
-3. Suggest one best stream to subscribe to when there is a clear match.
-4. If no provider fits, offer to draft one with `recipes/provider-authoring.md`.
+For templates the user can subscribe to:
+
+```bash
+agentfeeds templates search <query>
+agentfeeds templates show <template-id> --json
+```
+
+For active subscriptions already available as local context:
+
+```bash
+agentfeeds streams list --json
+agentfeeds streams search <query> --json
+```
+
+Present the best matches with title, template id or subscription id, required parameters, auth requirement, and quality tier when available.
+
+Suggest one best template to subscribe to when there is a clear match. If no template fits, offer local template authoring with `recipes/template-authoring.md`.
