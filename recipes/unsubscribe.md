@@ -2,7 +2,7 @@
 
 Use this when the user asks to remove an Agent Feeds subscription.
 
-1. Identify the concrete subscription id with `agentfeeds streams list --json` or `agentfeeds streams search <query> --json`.
+1. Identify the concrete subscription id with `agentfeeds streams list --json` or `agentfeeds streams find <query> --json`.
 2. Run `agentfeeds unsubscribe <subscription-id>`.
 3. If the user names a template instead, show matching concrete subscriptions and ask which one to remove.
 4. Confirm what was removed.

@@ -5,7 +5,7 @@ Use this when the user asks what Agent Feeds templates or active streams are ava
 For templates the user can subscribe to:
 
 ```bash
-agentfeeds templates search <query>
+agentfeeds templates find <query>
 agentfeeds templates show <template-id> --json
 ```
 
@@ -13,7 +13,7 @@ For active subscriptions already available as local context:
 
 ```bash
 agentfeeds streams list --json
-agentfeeds streams search <query> --json
+agentfeeds streams find <query> --json
 ```
 
 Present the best matches with title, template id or subscription id, required parameters, auth requirement, and quality tier when available.

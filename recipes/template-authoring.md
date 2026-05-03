@@ -2,8 +2,8 @@
 
 Use this when the user wants Agent Feeds to support a source that no current template covers.
 
-1. Run `agentfeeds templates search <query>` and confirm no existing template fits.
-2. Run `agentfeeds templates adapters` and classify the source:
+1. Run `agentfeeds templates find <query>` and confirm no existing template fits.
+2. Run `agentfeeds admin templates adapters` and classify the source:
    - `local_file` for one local text, Markdown, or JSON file.
    - `local_command` for an explicitly approved local read command.
    - `json_http` for one HTTP JSON snapshot.
@@ -15,11 +15,11 @@ Use this when the user wants Agent Feeds to support a source that no current tem
    - `snapshot` for one current state.
    - `event` for a list of recent items.
 5. Define required parameters. Do not bake user-specific secrets into template YAML.
-6. Run `agentfeeds templates scaffold <adapter-kind> <template-id>`.
+6. Run `agentfeeds admin templates scaffold <adapter-kind> <template-id>`.
 7. Edit the generated YAML under `~/.agentfeeds/templates/streams/<category>/<name>.yaml`.
 8. Edit the generated schema under `~/.agentfeeds/templates/schemas/event-types/<type>.v1.json` when the scaffold created one.
 9. Reuse built-in schemas for `rss`, `ical`, and `local_command` unless the user needs custom fields.
-10. Keep template descriptions short and operator-facing. Include tags that help `agentfeeds templates search`.
+10. Keep template descriptions short and operator-facing. Include tags that help `agentfeeds templates find`.
 11. Run `recipes/template-testing.md`.
 
 For local/private sources, prefer read-only snapshots. Template adapters should read from the source and write Agent Feeds state; they should not mutate the original source.
@@ -27,7 +27,7 @@ For local/private sources, prefer read-only snapshots. Template adapters should 
 For `local_command`, use argv arrays only. Do not use shell strings. Only create command templates for commands the operator explicitly requested or approved. Before testing or subscribing, show the exact command and run:
 
 ```bash
-agentfeeds templates approve-command <template-id> [key=value ...]
+agentfeeds admin templates approve-command <template-id> [key=value ...]
 ```
 
 If the command or parameters change, approve the new digest before running it.
@@ -65,7 +65,7 @@ adapter:
     expression: "{title: title, content: summary, updated_at: updated_at}"
 ```
 
-Minimal stream template, equivalent to `agentfeeds templates scaffold local_file local/example`:
+Minimal stream template, equivalent to `agentfeeds admin templates scaffold local_file local/example`:
 
 ```yaml
 id: local/example

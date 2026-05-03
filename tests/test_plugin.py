@@ -79,3 +79,20 @@ def test_installer_links_hermes_skill_to_core_checkout():
     assert 'ln -sfn "$PLUGIN_DIR" "$HOME/.hermes/skills/agentfeeds"' not in installer
     assert "git clone \"$CATALOG_REPO\"" not in installer
     assert "AGENTFEEDS_CATALOG_DIR" in installer
+    assert "admin polling install" in installer
+    assert "polling install" not in installer.replace("admin polling install", "")
+
+
+def test_recipes_use_current_agentfeeds_cli():
+    recipe_text = "\n".join(path.read_text(encoding="utf-8") for path in sorted((ROOT / "recipes").glob("*.md")))
+
+    assert "templates search" not in recipe_text
+    assert "streams search" not in recipe_text
+    assert "agentfeeds templates approve-command" not in recipe_text
+    assert "agentfeeds templates validate" not in recipe_text
+    assert "agentfeeds templates test" not in recipe_text
+    assert "refresh <subscription-id>" not in recipe_text
+    assert "templates find" in recipe_text
+    assert "streams find" in recipe_text
+    assert "admin templates approve-command" in recipe_text
+    assert "refresh --stream <subscription-id>" in recipe_text

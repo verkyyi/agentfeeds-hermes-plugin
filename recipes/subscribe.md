@@ -6,7 +6,7 @@ Use this when the user asks to subscribe to an ambient data stream.
 2. Search built-in and local templates:
 
 ```bash
-agentfeeds templates search <query>
+agentfeeds templates find <query>
 ```
 
 3. Inspect likely matches:
@@ -23,6 +23,7 @@ agentfeeds templates show <template-id> --json
 6. Run:
 
 ```bash
+agentfeeds subscribe <template-id> [key=value ...] --dry-run --json
 agentfeeds subscribe <template-id> [key=value ...]
 ```
 

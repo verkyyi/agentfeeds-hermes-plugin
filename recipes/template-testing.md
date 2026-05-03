@@ -5,26 +5,26 @@ Use this after creating or editing an Agent Feeds template.
 1. Validate local template definitions:
 
 ```bash
-agentfeeds templates validate
+agentfeeds admin templates validate
 ```
 
 2. If the template uses `local_command`, approve the exact substituted command before testing:
 
 ```bash
-agentfeeds templates approve-command <template-id> [key=value ...]
+agentfeeds admin templates approve-command <template-id> [key=value ...]
 ```
 
 3. Run the template once without writing state or touching subscriptions:
 
 ```bash
-agentfeeds templates test <template-id> [key=value ...]
-agentfeeds templates test <template-id> [key=value ...] --json
+agentfeeds admin templates test <template-id> [key=value ...]
+agentfeeds admin templates test <template-id> [key=value ...] --json
 ```
 
 4. Confirm discovery sees the template:
 
 ```bash
-agentfeeds templates search <query>
+agentfeeds templates find <query>
 ```
 
 5. If you need to test subscription materialization, use a temporary Agent Feeds root instead of the user's live subscriptions. Copy the drafted local template tree into the temp root first:
@@ -35,7 +35,7 @@ mkdir -p "$tmp/templates"
 cp -R ~/.agentfeeds/templates/streams "$tmp/templates/"
 cp -R ~/.agentfeeds/templates/schemas "$tmp/templates/"
 agentfeeds --root "$tmp" subscribe <template-id> [key=value ...] --no-fetch
-agentfeeds --root "$tmp" refresh <subscription-id>
+agentfeeds --root "$tmp" refresh --stream <subscription-id>
 agentfeeds --root "$tmp" streams health --json
 agentfeeds --root "$tmp" streams read <subscription-id> --limit 20 --json
 ```

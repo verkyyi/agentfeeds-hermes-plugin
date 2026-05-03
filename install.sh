@@ -63,8 +63,8 @@ if [ -n "$CATALOG_DIR" ] && [ -f "$CATALOG_DIR/catalog/INDEX.json" ]; then
 fi
 
 python3 "$CORE_DIR/scripts/agentfeeds_fetch.py" --update-catalog --regenerate-catalog
-if ! python3 "$CORE_DIR/scripts/agentfeeds.py" polling install; then
-  echo "Background polling was not installed; run agentfeeds polling status --json for diagnostics." >&2
+if ! python3 "$CORE_DIR/scripts/agentfeeds.py" admin polling install; then
+  echo "Background polling was not installed; run agentfeeds admin polling status --json for diagnostics." >&2
 fi
 
 echo "Installed Agent Feeds Hermes plugin, canonical core skill, and CLI wrappers."
@@ -73,5 +73,5 @@ if [ -n "$CATALOG_DIR" ]; then
   echo "Agent Feeds catalog override: $CATALOG_DIR"
 fi
 echo "Hermes skill link: $HOME/.hermes/skills/agentfeeds -> $CORE_DIR"
-echo "Agent Feeds background refresh: check with agentfeeds polling status --json"
+echo "Agent Feeds background refresh: check with agentfeeds admin polling status --json"
 echo "Restart Hermes for the plugin and skill to take effect."
