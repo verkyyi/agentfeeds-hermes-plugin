@@ -7,6 +7,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 PLUGIN = ROOT / "__init__.py"
+INSTALLER = ROOT / "install.sh"
 
 
 def load_plugin():
@@ -68,3 +69,13 @@ def test_hermes_plugin_prefers_cli_brief(tmp_path):
     context = plugin._agentfeeds_context()["context"]
 
     assert context == "<agentfeeds>\nNo active local streams.\n</agentfeeds>"
+
+
+def test_installer_links_hermes_skill_to_core_checkout():
+    installer = INSTALLER.read_text(encoding="utf-8")
+
+    assert 'ln -sfn "$CORE_DIR" "$HOME/.hermes/skills/agentfeeds"' in installer
+    assert 'ln -sfn "$PLUGIN_DIR" "$HOME/.hermes/plugins/agentfeeds"' in installer
+    assert 'ln -sfn "$PLUGIN_DIR" "$HOME/.hermes/skills/agentfeeds"' not in installer
+    assert "git clone \"$CATALOG_REPO\"" not in installer
+    assert "AGENTFEEDS_CATALOG_DIR" in installer

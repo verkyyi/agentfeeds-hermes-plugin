@@ -7,8 +7,12 @@ while [ -L "$SCRIPT" ]; do
   SCRIPT="$(readlink "$SCRIPT")"
   [[ "$SCRIPT" != /* ]] && SCRIPT="$DIR/$SCRIPT"
 done
+PLUGIN_DIR="$(cd -P "$(dirname "$SCRIPT")/.." && pwd)"
 CORE_DIR="${AGENTFEEDS_CORE_DIR:-$HOME/.hermes/plugins-src/agentfeeds-core}"
-CATALOG_DIR="${AGENTFEEDS_CATALOG_DIR:-$HOME/.hermes/plugins-src/agentfeeds-catalog}"
+if [ -z "${AGENTFEEDS_CORE_DIR:-}" ] && [ -f "$PLUGIN_DIR/vendor/agentfeeds-skill/scripts/agentfeeds_fetch.py" ]; then
+  CORE_DIR="$PLUGIN_DIR/vendor/agentfeeds-skill"
+fi
+CATALOG_DIR="${AGENTFEEDS_CATALOG_DIR:-}"
 
 if ! command -v python3 >/dev/null 2>&1; then
   echo "python3 is required to run Agent Feeds. Install Python 3.11+, then rerun install.sh." >&2
@@ -20,7 +24,7 @@ if [ ! -f "$CORE_DIR/scripts/agentfeeds_fetch.py" ]; then
   exit 1
 fi
 
-if [ -f "$CATALOG_DIR/catalog/INDEX.json" ]; then
+if [ -n "$CATALOG_DIR" ] && [ -f "$CATALOG_DIR/catalog/INDEX.json" ]; then
   export AGENTFEEDS_CATALOG_DIR="$CATALOG_DIR"
 fi
 
