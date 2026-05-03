@@ -69,7 +69,7 @@ The Hermes skill itself is installed from the core Agent Feeds checkout so the p
 Build a Hermes release bundle with:
 
 ```bash
-python3 scripts/build_hermes_bundle.py --core-root ../agentfeeds --output dist/agentfeeds-hermes-plugin.zip
+python3 scripts/build_hermes_bundle.py --core-root ../agentfeeds --output dist/agentfeeds-hermes-plugin-v0.1.1.zip
 ```
 
 ## License

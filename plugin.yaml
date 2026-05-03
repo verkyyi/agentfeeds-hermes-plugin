@@ -1,5 +1,5 @@
 name: agentfeeds
-version: 0.1.0
+version: 0.1.1
 description: "Inject compact Agent Feeds stream metadata into Hermes turns."
 author: verkyyi
 kind: standalone
