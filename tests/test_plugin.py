@@ -83,6 +83,14 @@ def test_installer_links_hermes_skill_to_core_checkout():
     assert "polling install" not in installer.replace("admin polling install", "")
 
 
+def test_wrappers_resolve_core_from_hermes_skill_link():
+    for wrapper_name in ["agentfeeds", "agentfeeds-fetch", "agentfeeds-install-poll", "agentfeeds-uninstall-poll"]:
+        wrapper = (ROOT / "bin" / wrapper_name).read_text(encoding="utf-8")
+
+        assert '$HOME/.hermes/skills/agentfeeds' in wrapper
+        assert '$HOME/.hermes/plugins-src/agentfeeds-core' in wrapper
+
+
 def test_recipes_use_current_agentfeeds_cli():
     recipe_text = "\n".join(path.read_text(encoding="utf-8") for path in sorted((ROOT / "recipes").glob("*.md")))
 

@@ -8,9 +8,15 @@ while [ -L "$SCRIPT" ]; do
   [[ "$SCRIPT" != /* ]] && SCRIPT="$DIR/$SCRIPT"
 done
 PLUGIN_DIR="$(cd -P "$(dirname "$SCRIPT")/.." && pwd)"
-CORE_DIR="${AGENTFEEDS_CORE_DIR:-$HOME/.hermes/plugins-src/agentfeeds-core}"
-if [ -z "${AGENTFEEDS_CORE_DIR:-}" ] && [ -f "$PLUGIN_DIR/vendor/agentfeeds-skill/scripts/agentfeeds_fetch.py" ]; then
+CORE_DIR="${AGENTFEEDS_CORE_DIR:-}"
+if [ -z "$CORE_DIR" ] && [ -f "$PLUGIN_DIR/vendor/agentfeeds-skill/scripts/agentfeeds_fetch.py" ]; then
   CORE_DIR="$PLUGIN_DIR/vendor/agentfeeds-skill"
+fi
+if [ -z "$CORE_DIR" ] && [ -f "$HOME/.hermes/skills/agentfeeds/scripts/agentfeeds_fetch.py" ]; then
+  CORE_DIR="$HOME/.hermes/skills/agentfeeds"
+fi
+if [ -z "$CORE_DIR" ]; then
+  CORE_DIR="$HOME/.hermes/plugins-src/agentfeeds-core"
 fi
 CATALOG_DIR="${AGENTFEEDS_CATALOG_DIR:-}"
 
